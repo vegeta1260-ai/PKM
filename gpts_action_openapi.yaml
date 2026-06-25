@@ -1,0 +1,258 @@
+openapi: 3.1.0
+info:
+  title: Pokemon Champions Calculator API
+  version: 1.0.0
+  description: Deterministic Pokemon Champions damage and speed calculator for GPT Actions.
+servers:
+  - url: https://YOUR-CALCULATOR-DOMAIN.example.com
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Check calculator service status.
+      responses:
+        "200":
+          description: Service status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  service:
+                    type: string
+  /damage:
+    post:
+      operationId: calculateDamage
+      summary: Calculate exact 16-roll damage range and KO chance.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DamageRequest"
+      responses:
+        "200":
+          description: Damage result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DamageResult"
+  /speed:
+    post:
+      operationId: calculateSpeed
+      summary: Calculate one Pokemon's effective speed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pokemon:
+                  $ref: "#/components/schemas/PokemonSet"
+                field:
+                  $ref: "#/components/schemas/FieldState"
+      responses:
+        "200":
+          description: Speed result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpeedResult"
+  /compare-speed:
+    post:
+      operationId: compareSpeed
+      summary: Compare two Pokemon speeds under current field conditions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [left, right]
+              properties:
+                left:
+                  $ref: "#/components/schemas/PokemonSet"
+                right:
+                  $ref: "#/components/schemas/PokemonSet"
+                field:
+                  $ref: "#/components/schemas/FieldState"
+      responses:
+        "200":
+          description: Speed comparison.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  left:
+                    $ref: "#/components/schemas/SpeedResult"
+                  right:
+                    $ref: "#/components/schemas/SpeedResult"
+                  faster:
+                    type: string
+                    enum: [left, right, tie]
+components:
+  schemas:
+    DamageRequest:
+      type: object
+      required: [attacker, defender, move]
+      properties:
+        attacker:
+          $ref: "#/components/schemas/PokemonSet"
+        defender:
+          $ref: "#/components/schemas/PokemonSet"
+        move:
+          $ref: "#/components/schemas/MoveInput"
+        field:
+          $ref: "#/components/schemas/FieldState"
+    PokemonSet:
+      type: object
+      required: [species]
+      properties:
+        species:
+          type: string
+          examples: ["Charizard-Mega-Y", "Venusaur-Mega"]
+        ability:
+          type: string
+        item:
+          type: string
+        status:
+          type: string
+          examples: ["brn", "par"]
+        teraType:
+          type: string
+        currentHp:
+          type: number
+        currentHpPercent:
+          type: number
+          minimum: 0
+          maximum: 100
+        statPoints:
+          $ref: "#/components/schemas/StatPoints"
+        alignment:
+          oneOf:
+            - type: string
+              examples: ["Speed+", "Defense+", "SpA+ Atk-"]
+            - type: object
+              properties:
+                plus:
+                  type: string
+                minus:
+                  type: string
+        boosts:
+          $ref: "#/components/schemas/Boosts"
+        unburdenActive:
+          type: boolean
+    StatPoints:
+      type: object
+      properties:
+        hp: { type: integer, minimum: 0, maximum: 32 }
+        atk: { type: integer, minimum: 0, maximum: 32 }
+        def: { type: integer, minimum: 0, maximum: 32 }
+        spa: { type: integer, minimum: 0, maximum: 32 }
+        spd: { type: integer, minimum: 0, maximum: 32 }
+        spe: { type: integer, minimum: 0, maximum: 32 }
+    Boosts:
+      type: object
+      properties:
+        atk: { type: integer, minimum: -6, maximum: 6 }
+        def: { type: integer, minimum: -6, maximum: 6 }
+        spa: { type: integer, minimum: -6, maximum: 6 }
+        spd: { type: integer, minimum: -6, maximum: 6 }
+        spe: { type: integer, minimum: -6, maximum: 6 }
+    MoveInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          examples: ["Flamethrower", "Moonblast"]
+        isCrit:
+          type: boolean
+        includeCritical:
+          type: boolean
+          description: Return both normal and critical-hit damage.
+        critStage:
+          type: integer
+          minimum: 0
+          maximum: 4
+          description: Modern critical-hit stage. 0 is ordinary rate; 3 or higher is guaranteed.
+        alwaysCrit:
+          type: boolean
+          description: Use for moves that always critical-hit if they connect.
+        hits:
+          type: integer
+        useZ:
+          type: boolean
+        accuracy:
+          type: number
+    FieldState:
+      type: object
+      properties:
+        gameType:
+          type: string
+          enum: [Singles, Doubles]
+        weather:
+          type: string
+          examples: ["Sun", "Rain", "Sand", "Snow"]
+        terrain:
+          type: string
+        tailwind:
+          type: boolean
+        attackerSide:
+          type: object
+          properties:
+            isHelpingHand:
+              type: boolean
+            isTailwind:
+              type: boolean
+        defenderSide:
+          type: object
+          properties:
+            isReflect:
+              type: boolean
+            isLightScreen:
+              type: boolean
+            isAuroraVeil:
+              type: boolean
+            isFriendGuard:
+              type: boolean
+    DamageResult:
+      type: object
+      properties:
+        engine:
+          type: string
+        engineVersion:
+          type: string
+        damageRolls:
+          type: array
+          items:
+            type: number
+        damageRange:
+          type: array
+          items:
+            type: number
+        damagePercentOfMaxHp:
+          type: array
+          items:
+            type: number
+        koChance:
+          type: object
+        description:
+          type: string
+    SpeedResult:
+      type: object
+      properties:
+        species:
+          type: string
+        rawSpeed:
+          type: number
+        effectiveSpeed:
+          type: number
+        notes:
+          type: array
+          items:
+            type: string
