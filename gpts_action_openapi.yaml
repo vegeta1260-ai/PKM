@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: Deterministic Pokemon Champions damage and speed calculator for GPT Actions.
 servers:
-  - url: https://YOUR-CALCULATOR-DOMAIN.example.com
+  - url: https://pkm-calculator-loyang-s-projects.vercel.app
 paths:
   /health:
     get:
