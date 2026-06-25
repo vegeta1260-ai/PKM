@@ -1,0 +1,13 @@
+{
+  "name": "pokemon-champions-gpts-calculator",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "calc:test": "node calculator/tests/run_regression_tests.js",
+    "calc:sample": "node calculator/examples/sample_calcs.js",
+    "calc:server": "node calculator/server.js"
+  },
+  "dependencies": {
+    "@smogon/calc": "^0.10.0"
+  }
+}
