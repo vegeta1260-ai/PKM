@@ -1,8 +1,8 @@
 const http = require("http");
-const {calculateDamage, calculateSpeed, compareSpeed} = require("./championsAdapter");
+const {calculateDamage, calculateSpeed, compareSpeed, getAdapterInfo} = require("./championsAdapter");
 
 const PORT = Number(process.env.PORT || 8787);
-const SERVICE_VERSION = "2026-06-26-action-v1.5.1";
+const SERVICE_VERSION = "2026-06-26-action-v1.5.2";
 
 function sendJson(res, status, payload) {
   const body = status === 204 ? "" : JSON.stringify(payload, null, 2);
@@ -54,8 +54,14 @@ async function handler(req, res) {
         ok: true,
         service: "pokemon-champions-calculator",
         version: SERVICE_VERSION,
-        patch: "builtin-zh-alias-and-unknown-species-guard",
+        patch: "builtin-zh-alias-and-health-canary",
+        adapter: typeof getAdapterInfo === "function" ? getAdapterInfo() : {error: "adapter-info-missing"},
       });
+    }
+
+    if (req.method === "GET" && route === "/self-test") {
+      const speed = calculateSpeed({species: "Mega噴火龍Y", statPoints: {hp: 2, spa: 32, spe: 32}, alignment: {plus: "速度"}}, {});
+      return sendJson(res, 200, {ok: true, version: SERVICE_VERSION, adapter: typeof getAdapterInfo === "function" ? getAdapterInfo() : {}, speed});
     }
 
     if (req.method !== "POST") return sendJson(res, 405, {error: "Method not allowed"});
