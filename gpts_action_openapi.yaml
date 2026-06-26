@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: Pokemon Champions Calculator API
   version: 1.0.0
@@ -39,20 +39,156 @@ paths:
               properties:
                 attacker:
                   type: object
-                  description: Attacking Pokemon set. Include species, ability, item, statPoints, alignment, boosts, status, currentHp, or currentHpPercent when relevant.
-                  additionalProperties: true
+                  description: Attacking Pokemon set.
+                  properties:
+                    species:
+                      type: string
+                    ability:
+                      type: string
+                    item:
+                      type: string
+                    status:
+                      type: string
+                    teraType:
+                      type: string
+                    currentHp:
+                      type: number
+                    currentHpPercent:
+                      type: number
+                    statPoints:
+                      type: object
+                      properties:
+                        hp:
+                          type: integer
+                        atk:
+                          type: integer
+                        def:
+                          type: integer
+                        spa:
+                          type: integer
+                        spd:
+                          type: integer
+                        spe:
+                          type: integer
+                    alignment:
+                      type: string
+                    boosts:
+                      type: object
+                      properties:
+                        atk:
+                          type: integer
+                        def:
+                          type: integer
+                        spa:
+                          type: integer
+                        spd:
+                          type: integer
+                        spe:
+                          type: integer
+                    unburdenActive:
+                      type: boolean
                 defender:
                   type: object
-                  description: Defending Pokemon set. Include species, ability, item, statPoints, alignment, boosts, status, currentHp, or currentHpPercent when relevant.
-                  additionalProperties: true
+                  description: Defending Pokemon set.
+                  properties:
+                    species:
+                      type: string
+                    ability:
+                      type: string
+                    item:
+                      type: string
+                    status:
+                      type: string
+                    teraType:
+                      type: string
+                    currentHp:
+                      type: number
+                    currentHpPercent:
+                      type: number
+                    statPoints:
+                      type: object
+                      properties:
+                        hp:
+                          type: integer
+                        atk:
+                          type: integer
+                        def:
+                          type: integer
+                        spa:
+                          type: integer
+                        spd:
+                          type: integer
+                        spe:
+                          type: integer
+                    alignment:
+                      type: string
+                    boosts:
+                      type: object
+                      properties:
+                        atk:
+                          type: integer
+                        def:
+                          type: integer
+                        spa:
+                          type: integer
+                        spd:
+                          type: integer
+                        spe:
+                          type: integer
+                    unburdenActive:
+                      type: boolean
                 move:
                   type: object
-                  description: Move input. Include name, isCrit, includeCritical, critStage, alwaysCrit, hits, useZ, or accuracy when relevant.
-                  additionalProperties: true
+                  description: Move input.
+                  required:
+                    - name
+                  properties:
+                    name:
+                      type: string
+                    isCrit:
+                      type: boolean
+                    includeCritical:
+                      type: boolean
+                    critStage:
+                      type: integer
+                    alwaysCrit:
+                      type: boolean
+                    hits:
+                      type: integer
+                    useZ:
+                      type: boolean
+                    accuracy:
+                      type: number
                 field:
                   type: object
-                  description: Battle field state. Include weather, terrain, gameType, attackerSide, defenderSide, tailwind, screens, or other relevant field flags.
-                  additionalProperties: true
+                  description: Battle field state.
+                  properties:
+                    gameType:
+                      type: string
+                    weather:
+                      type: string
+                    terrain:
+                      type: string
+                    tailwind:
+                      type: boolean
+                    attackerSide:
+                      type: object
+                      properties:
+                        isHelpingHand:
+                          type: boolean
+                        isTailwind:
+                          type: boolean
+                    defenderSide:
+                      type: object
+                      properties:
+                        isReflect:
+                          type: boolean
+                        isLightScreen:
+                          type: boolean
+                        isAuroraVeil:
+                          type: boolean
+                        isFriendGuard:
+                          type: boolean
       responses:
         '200':
           description: Damage calculation result.
@@ -60,7 +196,34 @@ paths:
             application/json:
               schema:
                 type: object
-                additionalProperties: true
+                properties:
+                  engine:
+                    type: string
+                  engineVersion:
+                    type: string
+                  damageRolls:
+                    type: array
+                    items:
+                      type: number
+                  damageRange:
+                    type: array
+                    items:
+                      type: number
+                  damagePercentOfMaxHp:
+                    type: array
+                    items:
+                      type: number
+                  koChance:
+                    type: object
+                    properties:
+                      guaranteed:
+                        type: boolean
+                      chance:
+                        type: number
+                      rolls:
+                        type: string
+                  description:
+                    type: string
   /speed:
     post:
       operationId: calculateSpeed
@@ -74,13 +237,55 @@ paths:
               properties:
                 pokemon:
                   type: object
-                  description: Pokemon set. Include species, statPoints, alignment, boosts, ability, item, status, or unburdenActive when relevant.
-                  additionalProperties: true
+                  description: Pokemon set.
+                  properties:
+                    species:
+                      type: string
+                    ability:
+                      type: string
+                    item:
+                      type: string
+                    status:
+                      type: string
+                    statPoints:
+                      type: object
+                      properties:
+                        hp:
+                          type: integer
+                        atk:
+                          type: integer
+                        def:
+                          type: integer
+                        spa:
+                          type: integer
+                        spd:
+                          type: integer
+                        spe:
+                          type: integer
+                    alignment:
+                      type: string
+                    boosts:
+                      type: object
+                      properties:
+                        spe:
+                          type: integer
+                    unburdenActive:
+                      type: boolean
                 field:
                   type: object
                   description: Field state for speed calculation.
-                  additionalProperties: true
-              additionalProperties: true
+                  properties:
+                    weather:
+                      type: string
+                    terrain:
+                      type: string
+                    tailwind:
+                      type: boolean
+                    attackerSide:
+                      type: object
+                      properties:
+                        isTailwind:
+                          type: boolean
       responses:
         '200':
           description: Speed calculation result.
@@ -88,7 +293,17 @@ paths:
             application/json:
               schema:
                 type: object
-                additionalProperties: true
+                properties:
+                  species:
+                    type: string
+                  rawSpeed:
+                    type: number
+                  effectiveSpeed:
+                    type: number
+                  notes:
+                    type: array
+                    items:
+                      type: string
   /compare-speed:
     post:
       operationId: compareSpeed
@@ -106,15 +321,90 @@ paths:
                 left:
                   type: object
                   description: First Pokemon set.
-                  additionalProperties: true
+                  properties:
+                    species:
+                      type: string
+                    ability:
+                      type: string
+                    item:
+                      type: string
+                    status:
+                      type: string
+                    statPoints:
+                      type: object
+                      properties:
+                        hp:
+                          type: integer
+                        atk:
+                          type: integer
+                        def:
+                          type: integer
+                        spa:
+                          type: integer
+                        spd:
+                          type: integer
+                        spe:
+                          type: integer
+                    alignment:
+                      type: string
+                    boosts:
+                      type: object
+                      properties:
+                        spe:
+                          type: integer
+                    unburdenActive:
+                      type: boolean
                 right:
                   type: object
                   description: Second Pokemon set.
-                  additionalProperties: true
+                  properties:
+                    species:
+                      type: string
+                    ability:
+                      type: string
+                    item:
+                      type: string
+                    status:
+                      type: string
+                    statPoints:
+                      type: object
+                      properties:
+                        hp:
+                          type: integer
+                        atk:
+                          type: integer
+                        def:
+                          type: integer
+                        spa:
+                          type: integer
+                        spd:
+                          type: integer
+                        spe:
+                          type: integer
+                    alignment:
+                      type: string
+                    boosts:
+                      type: object
+                      properties:
+                        spe:
+                          type: integer
+                    unburdenActive:
+                      type: boolean
                 field:
                   type: object
                   description: Field state for speed comparison.
-                  additionalProperties: true
+                  properties:
+                    weather:
+                      type: string
+                    terrain:
+                      type: string
+                    tailwind:
+                      type: boolean
+                    attackerSide:
+                      type: object
+                      properties:
+                        isTailwind:
+                          type: boolean
       responses:
         '200':
           description: Speed comparison result.
@@ -122,4 +412,32 @@ paths:
             application/json:
               schema:
                 type: object
-                additionalProperties: true
+                properties:
+                  left:
+                    type: object
+                    properties:
+                      species:
+                        type: string
+                      rawSpeed:
+                        type: number
+                      effectiveSpeed:
+                        type: number
+                      notes:
+                        type: array
+                        items:
+                          type: string
+                  right:
+                    type: object
+                    properties:
+                      species:
+                        type: string
+                      rawSpeed:
+                        type: number
+                      effectiveSpeed:
+                        type: number
+                      notes:
+                        type: array
+                        items:
+                          type: string
+                  faster:
+                    type: string
