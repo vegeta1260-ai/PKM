@@ -1,8 +1,9 @@
 const http = require("http");
 const {calculateDamage, calculateSpeed, compareSpeed, getAdapterInfo} = require("./championsAdapter");
+const {localizeResponse} = require("./zhDisplay");
 
 const PORT = Number(process.env.PORT || 8787);
-const SERVICE_VERSION = "2026-06-26-action-v1.5.2";
+const SERVICE_VERSION = "2026-06-26-action-v1.5.3";
 
 function sendJson(res, status, payload) {
   const body = status === 204 ? "" : JSON.stringify(payload, null, 2);
@@ -13,6 +14,10 @@ function sendJson(res, status, payload) {
     "access-control-allow-headers": "content-type, authorization",
   });
   res.end(body);
+}
+
+function sendLocalizedJson(res, status, payload) {
+  return sendJson(res, status, localizeResponse(payload));
 }
 
 function getPath(req) {
@@ -50,30 +55,30 @@ async function handler(req, res) {
 
   try {
     if (req.method === "GET" && route === "/health") {
-      return sendJson(res, 200, {
+      return sendLocalizedJson(res, 200, {
         ok: true,
         service: "pokemon-champions-calculator",
         version: SERVICE_VERSION,
-        patch: "builtin-zh-alias-and-health-canary",
+        patch: "zh-display-layer-and-alias-data",
         adapter: typeof getAdapterInfo === "function" ? getAdapterInfo() : {error: "adapter-info-missing"},
       });
     }
 
     if (req.method === "GET" && route === "/self-test") {
       const speed = calculateSpeed({species: "Mega噴火龍Y", statPoints: {hp: 2, spa: 32, spe: 32}, alignment: {plus: "速度"}}, {});
-      return sendJson(res, 200, {ok: true, version: SERVICE_VERSION, adapter: typeof getAdapterInfo === "function" ? getAdapterInfo() : {}, speed});
+      return sendLocalizedJson(res, 200, {ok: true, version: SERVICE_VERSION, adapter: typeof getAdapterInfo === "function" ? getAdapterInfo() : {}, speed});
     }
 
-    if (req.method !== "POST") return sendJson(res, 405, {error: "Method not allowed"});
+    if (req.method !== "POST") return sendLocalizedJson(res, 405, {error: "Method not allowed"});
     const body = await readBody(req);
 
-    if (route === "/damage") return sendJson(res, 200, calculateDamage(body));
-    if (route === "/speed") return sendJson(res, 200, calculateSpeed(body.pokemon || body, body.field || {}));
-    if (route === "/compare-speed") return sendJson(res, 200, compareSpeed(body));
+    if (route === "/damage") return sendLocalizedJson(res, 200, calculateDamage(body));
+    if (route === "/speed") return sendLocalizedJson(res, 200, calculateSpeed(body.pokemon || body, body.field || {}));
+    if (route === "/compare-speed") return sendLocalizedJson(res, 200, compareSpeed(body));
 
-    return sendJson(res, 404, {error: "Unknown route"});
+    return sendLocalizedJson(res, 404, {error: "Unknown route"});
   } catch (error) {
-    return sendJson(res, 400, {
+    return sendLocalizedJson(res, 400, {
       error: error.message,
       hint: "Check species/move Chinese aliases, required fields, and payload shape.",
       stack: process.env.NODE_ENV === "production" ? undefined : error.stack,
